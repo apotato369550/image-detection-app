@@ -158,7 +158,7 @@ class DatasetManager:
                             downloaded += len(chunk)
 
                             if total_size > 0:
-                                progress = (downloaded / total_size) * 100
+                                progress = min((downloaded / total_size) * 100, 100.0)
                                 logger.info(f"Download progress: {progress:.1f}%")
 
             logger.info(f"Download completed: {filepath}")

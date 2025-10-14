@@ -22,25 +22,16 @@ class Config:
         self.data_dir = self.project_root / "data"
         self.logs_dir = self.project_root / "logs"
 
-        # Model configuration
+        # Model configuration - Using direct SavedModel download
         self.models = {
             "ssd_mobilenet_v2": {
-                "url": "http://download.tensorflow.org/models/object_detection/tf2/20200711/ssd_mobilenet_v2_320x320_coco17_tpu-8.tar.gz",
+                "url": "https://storage.googleapis.com/tfhub-modules/tensorflow/ssd_mobilenet_v2/2.tar.gz",
                 "filename": "ssd_mobilenet_v2.tar.gz",
-                "extracted_name": "ssd_mobilenet_v2_320x320_coco17_tpu-8",
-                "model_dir": "ssd_mobilenet_v2_320x320_coco17_tpu-8",
-                "model_file": "ssd_mobilenet_v2_320x320_coco17_tpu-8/saved_model.pb",
+                "extracted_name": "",  # Extract to root of models directory
+                "model_dir": "",  # Model files are directly in models/
+                "model_file": "saved_model.pb",
                 "description": "SSD MobileNet V2 - Fast, good for real-time detection",
                 "input_size": (320, 320)
-            },
-            "efficientdet_d0": {
-                "url": "https://storage.googleapis.com/cloud-tpu-checkpoints/efficientdet/coco/efficientdet_d0_coco17_tpu-32.tar.gz",
-                "filename": "efficientdet_d0.tar.gz",
-                "extracted_name": "efficientdet_d0_coco17_tpu-32",
-                "model_dir": "efficientdet_d0_coco17_tpu-32",
-                "model_file": "efficientdet_d0_coco17_tpu-32/saved_model.pb",
-                "description": "EfficientDet D0 - Better accuracy, reasonable speed",
-                "input_size": (512, 512)
             }
         }
 

@@ -106,7 +106,8 @@ class ComputerVisionApp:
                 logger.error(f"Model info not found for: {self.model_name}")
                 return False
 
-            model_file = Path("models") / model_info["model_file"]
+            # Fix: tf.saved_model.load() expects the directory containing the SavedModel, not the .pb file
+            model_file = Path("models")
 
             # Initialize detector
             self.detector = ObjectDetector(confidence_threshold=self.confidence_threshold)
@@ -209,6 +210,13 @@ class ComputerVisionApp:
             # Update performance tracking
             self.total_inference_time += detection_result.inference_time
 
+            # Debug: Log detection results
+            num_detections = len(detection_result.detections)
+            logger.info(f"Frame processed: {num_detections} objects detected")
+
+            if num_detections > 0:
+                logger.info(f"Top detection: {detection_result.detections[0].class_name} ({detection_result.detections[0].confidence:.2f})")
+
             # Draw detections on frame
             result_frame = self.visualizer.draw_detections(
                 frame, detection_result.detections
@@ -224,14 +232,25 @@ class ComputerVisionApp:
         """Add performance information overlay to frame."""
         try:
             # Calculate FPS
-            elapsed_time = time.time() - self.start_time
-            if elapsed_time > 0:
+            elapsed_time = time.time() - self.start_time if self.start_time > 0 else 0
+
+            if elapsed_time > 0 and self.frame_count > 0:
                 fps = self.frame_count / elapsed_time
-                inference_fps = 1.0 / (self.total_inference_time / max(self.frame_count, 1))
+                # Fix division by zero: handle case where total_inference_time is 0
+                if self.total_inference_time > 0:
+                    inference_fps = 1.0 / (self.total_inference_time / max(self.frame_count, 1))
+                else:
+                    inference_fps = 0.0
 
                 # Add text overlay
                 info_text = f"FPS: {fps:.1f} | Inference: {inference_fps:.1f} FPS"
 
+                cv2.putText(frame, info_text, (10, 30),
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2,
+                           cv2.LINE_AA)
+            else:
+                # Show placeholder when no timing data is available
+                info_text = "FPS: -- | Inference: -- FPS"
                 cv2.putText(frame, info_text, (10, 30),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2,
                            cv2.LINE_AA)
@@ -348,7 +367,7 @@ def main() -> None:
     app = ComputerVisionApp(
         camera_id=0,
         model_name="ssd_mobilenet_v2",
-        confidence_threshold=0.5,
+        confidence_threshold=0.3,  # Back to reasonable threshold now that input format is fixed
         width=640,
         height=480,
         fps=30

@@ -8,8 +8,9 @@ proper cleanup and frame rate control.
 
 import logging
 import time
-from typing import Optional, Tuple, Generator, Union
+from typing import Optional, Tuple, Generator, Union, List
 from pathlib import Path
+import numpy as np
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
