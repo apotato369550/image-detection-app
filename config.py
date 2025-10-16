@@ -1,7 +1,7 @@
 """
 Configuration Module
 
-Centralized configuration for the Computer Vision Application.
+Centralized configuration for the ASL Hand Sign Detection Application.
 Contains all settings for models, camera, detection, display, and file paths.
 """
 
@@ -49,13 +49,16 @@ class Config:
             "contrast": 128
         }
 
-        # Object detection configuration
+        # ASL hand sign detection configuration
         self.detection = {
-            "confidence_threshold": 0.5,
+            "confidence_threshold": 0.7,
             "iou_threshold": 0.45,
             "max_detections": 100,
             "enable_nms": True,
-            "nms_method": "default"  # "default", "soft", "hard"
+            "nms_method": "default",  # "default", "soft", "hard"
+            "hand_detection_only": True,  # Only detect hands, filter out other objects
+            "enable_skin_detection": True,  # Use skin color filtering for better hand detection
+            "min_hand_size": 1000  # Minimum hand region size in pixels
         }
 
         # Visualization configuration
@@ -73,7 +76,7 @@ class Config:
 
         # Application configuration
         self.app = {
-            "window_title": "Computer Vision App - Object Detection",
+            "window_title": "ASL Hand Sign Detection App",
             "enable_logging": True,
             "log_level": "INFO",
             "log_file": None,  # None for console only, or path for file logging
@@ -84,21 +87,20 @@ class Config:
 
         # Dataset configuration
         self.datasets = {
-            "coco_2017_train": {
-                "url": "http://images.cocodataset.org/annotations/annotations_trainval2017.zip",
-                "filename": "annotations_trainval2017.zip",
-                "description": "COCO 2017 Train/Val annotations",
+            "asl_alphabet_train": {
+                "url": "https://www.kaggle.com/api/v1/datasets/download/grassknoted/asl-alphabet/asl_alphabet_train.csv",
+                "filename": "asl_alphabet_train.csv",
+                "description": "ASL Alphabet Training Data (A-Z hand signs)",
                 "expected_files": [
-                    "annotations/instances_train2017.json",
-                    "annotations/instances_val2017.json"
+                    "asl_alphabet_train.csv"
                 ]
             },
-            "coco_2017_val": {
-                "url": "http://images.cocodataset.org/annotations/annotations_trainval2017.zip",
-                "filename": "annotations_trainval2017.zip",
-                "description": "COCO 2017 Train/Val annotations (same as train)",
+            "asl_alphabet_test": {
+                "url": "https://www.kaggle.com/api/v1/datasets/download/grassknoted/asl-alphabet/asl_alphabet_test.csv",
+                "filename": "asl_alphabet_test.csv",
+                "description": "ASL Alphabet Test Data (A-Z hand signs)",
                 "expected_files": [
-                    "annotations/instances_val2017.json"
+                    "asl_alphabet_test.csv"
                 ]
             }
         }
@@ -264,8 +266,8 @@ class Config:
 
     def print_config(self) -> None:
         """Print current configuration to console."""
-        print("Computer Vision Application Configuration")
-        print("=" * 50)
+        print("ASL Hand Sign Detection Application Configuration")
+        print("=" * 55)
 
         print("\nModel Configuration:")
         print(f"  Default Model: {self.default_model}")

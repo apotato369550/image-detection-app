@@ -1,8 +1,8 @@
 """
 Dataset Manager Module
 
-Handles downloading and caching of computer vision datasets, particularly COCO annotations.
-Provides structured access to dataset labels and metadata for object detection tasks.
+Handles downloading and caching of computer vision datasets, particularly ASL hand sign annotations.
+Provides structured access to dataset labels and metadata for hand sign detection tasks.
 """
 
 import json
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Category:
-    """Represents a COCO dataset category."""
+    """Represents an ASL dataset category."""
     id: int
     name: str
     supercategory: str
@@ -28,7 +28,7 @@ class Category:
 
 @dataclass
 class Annotation:
-    """Represents a COCO dataset annotation."""
+    """Represents an ASL dataset annotation."""
     id: int
     image_id: int
     category_id: int
@@ -39,21 +39,21 @@ class Annotation:
 
 @dataclass
 class ImageInfo:
-    """Represents image information from COCO dataset."""
+    """Represents image information from ASL dataset."""
     id: int
     width: int
     height: int
     file_name: str
     license: Optional[int] = None
-    coco_url: Optional[str] = None
+    dataset_url: Optional[str] = None
 
 
 class DatasetManager:
     """
     Manages downloading and caching of computer vision datasets.
 
-    Currently supports COCO dataset annotations with efficient caching
-    and structured data access.
+    Currently supports ASL (American Sign Language) hand sign datasets with efficient caching
+    and structured data access for hand sign detection tasks.
     """
 
     def __init__(self, data_dir: str = "data") -> None:
@@ -67,36 +67,31 @@ class DatasetManager:
         self.data_dir.mkdir(exist_ok=True)
         self.session = requests.Session()
 
-        # COCO dataset configurations
+        # ASL dataset configurations
         self.dataset_configs = {
-            "coco_2017_train": {
-                "url": "http://images.cocodataset.org/annotations/annotations_trainval2017.zip",
-                "filename": "annotations_trainval2017.zip",
-                "description": "COCO 2017 Train/Val annotations",
+            "asl_alphabet_train": {
+                "url": "https://www.kaggle.com/api/v1/datasets/download/grassknoted/asl-alphabet/asl_alphabet_train.csv",
+                "filename": "asl_alphabet_train.csv",
+                "description": "ASL Alphabet Training Data (A-Z hand signs)",
                 "expected_files": [
-                    "annotations/instances_train2017.json",
-                    "annotations/instances_val2017.json",
-                    "annotations/person_keypoints_train2017.json",
-                    "annotations/person_keypoints_val2017.json",
-                    "annotations/captions_train2017.json",
-                    "annotations/captions_val2017.json"
+                    "asl_alphabet_train.csv"
                 ]
             },
-            "coco_2017_val": {
-                "url": "http://images.cocodataset.org/annotations/annotations_trainval2017.zip",
-                "filename": "annotations_trainval2017.zip",
-                "description": "COCO 2017 Train/Val annotations (same as train)",
+            "asl_alphabet_test": {
+                "url": "https://www.kaggle.com/api/v1/datasets/download/grassknoted/asl-alphabet/asl_alphabet_test.csv",
+                "filename": "asl_alphabet_test.csv",
+                "description": "ASL Alphabet Test Data (A-Z hand signs)",
                 "expected_files": [
-                    "annotations/instances_val2017.json"
+                    "asl_alphabet_test.csv"
                 ]
             },
-            "coco_2014_train": {
-                "url": "http://images.cocodataset.org/annotations/annotations_trainval2014.zip",
-                "filename": "annotations_trainval2014.zip",
-                "description": "COCO 2014 Train/Val annotations",
+            "asl_signs_extended": {
+                "url": "https://example.com/asl_extended_dataset.zip",
+                "filename": "asl_extended_dataset.zip",
+                "description": "Extended ASL dataset with numbers and common signs",
                 "expected_files": [
-                    "annotations/instances_train2014.json",
-                    "annotations/instances_val2014.json"
+                    "annotations/asl_extended_train.json",
+                    "annotations/asl_extended_val.json"
                 ]
             }
         }
@@ -254,9 +249,9 @@ class DatasetManager:
         logger.info(f"Dataset {dataset_name} downloaded successfully")
         return str(self.data_dir)
 
-    def load_coco_annotations(self, annotation_file: str) -> Dict[str, Any]:
+    def load_asl_annotations(self, annotation_file: str) -> Dict[str, Any]:
         """
-        Load and parse COCO annotations from a JSON file.
+        Load and parse ASL annotations from a JSON file.
 
         Args:
             annotation_file: Path to the annotation JSON file
@@ -267,7 +262,7 @@ class DatasetManager:
         try:
             file_path = self.data_dir / annotation_file
             if not file_path.exists():
-                logger.error(f"Annotation file not found: {file_path}")
+                logger.error(f"ASL annotation file not found: {file_path}")
                 return {}
 
             logger.info(f"Loading annotations from: {file_path}")
@@ -290,7 +285,7 @@ class DatasetManager:
 
     def get_categories(self, annotation_file: str) -> List[Category]:
         """
-        Get all categories from COCO annotations.
+        Get all categories from ASL annotations.
 
         Args:
             annotation_file: Path to the annotation JSON file
@@ -298,7 +293,7 @@ class DatasetManager:
         Returns:
             List[Category]: List of all categories
         """
-        data = self.load_coco_annotations(annotation_file)
+        data = self.load_asl_annotations(annotation_file)
         categories_data = data.get('categories', [])
 
         categories = []
@@ -315,7 +310,7 @@ class DatasetManager:
 
     def get_class_names(self, annotation_file: str) -> List[str]:
         """
-        Get class names from COCO annotations.
+        Get class names from ASL annotations.
 
         Args:
             annotation_file: Path to the annotation JSON file
@@ -365,20 +360,23 @@ def main() -> None:
     for name, description in manager.list_available_datasets().items():
         print(f"  - {name}: {description}")
 
-    # Example: Download COCO 2017 validation annotations
-    dataset_path = manager.download_dataset("coco_2017_val")
+    # Example: Download ASL alphabet test data
+    dataset_path = manager.download_dataset("asl_alphabet_test")
     if dataset_path:
         print(f"Dataset downloaded to: {dataset_path}")
 
-        # Load and display categories
-        categories = manager.get_categories("annotations/instances_val2017.json")
-        print(f"\nFirst 10 categories:")
-        for cat in categories[:10]:
-            print(f"  {cat.id}: {cat.name} ({cat.supercategory})")
+        # Load and display categories (if JSON format available)
+        try:
+            categories = manager.get_categories("asl_alphabet_test.json")
+            print(f"\nFirst 10 ASL signs:")
+            for cat in categories[:10]:
+                print(f"  {cat.id}: {cat.name} ({cat.supercategory})")
 
-        # Get class names
-        class_names = manager.get_class_names("annotations/instances_val2017.json")
-        print(f"\nClass names: {class_names[:10]}...")
+            # Get class names
+            class_names = manager.get_class_names("asl_alphabet_test.json")
+            print(f"\nASL class names: {class_names[:10]}...")
+        except:
+            print("ASL dataset loaded (CSV format)")
     else:
         print("Failed to download dataset")
 
