@@ -1,13 +1,13 @@
-# Computer Vision Application
+# ASL Hand Sign Detection Application
 
-A complete, production-ready Python computer vision application for real-time object detection using TensorFlow Lite and OpenCV. Features automatic model downloading, webcam integration, and live visualization.
+A complete, production-ready Python computer vision application for real-time American Sign Language (ASL) hand sign detection using TensorFlow Lite and OpenCV. Features automatic model downloading, webcam integration, and live visualization of ASL alphabet and common signs.
 
 ## 🚀 Features
 
-- **Real-time Object Detection**: Live object detection using pretrained TensorFlow Lite models
-- **Automatic Model Management**: Downloads and caches models from TensorFlow Model Zoo
+- **Real-time ASL Hand Sign Detection**: Live American Sign Language hand sign recognition using pretrained TensorFlow Lite models
+- **Automatic Model Management**: Downloads and caches models suitable for hand sign detection
 - **Webcam Integration**: Robust camera handling with frame rate control
-- **Live Visualization**: Bounding boxes, class labels, and confidence scores
+- **Live Visualization**: Bounding boxes, ASL sign labels, and confidence scores
 - **Performance Monitoring**: Real-time FPS and inference speed tracking
 - **Modular Architecture**: Clean separation of concerns with extensible design
 - **Configuration Management**: Centralized configuration for easy customization
@@ -22,11 +22,11 @@ image-detection-app/
 │   ├── models/
 │   │   ├── __init__.py          # Models package
 │   │   ├── model_manager.py     # Model downloading and caching
-│   │   └── detector.py          # Object detection inference
+│   │   └── detector.py          # ASL hand sign detection inference
 │   └── utils/
 │       ├── __init__.py          # Utils package
 │       ├── camera.py            # Webcam handling
-│       ├── dataset_manager.py   # Dataset downloading
+│       ├── dataset_manager.py   # ASL dataset downloading
 │       └── visualizer.py        # Detection visualization
 ├── config.py                       # Centralized configuration
 ├── requirements.txt                 # Python dependencies
@@ -79,10 +79,10 @@ cv-app
 ```
 
 **What happens on first run:**
-1. Downloads SSD MobileNet V2 model (~15MB) from TensorFlow Model Zoo
-2. Initializes webcam and object detector
-3. Starts real-time object detection
-4. Displays live video with detection results
+1. Downloads SSD MobileNet V2 model (~15MB) suitable for hand sign detection
+2. Initializes webcam and ASL hand sign detector
+3. Starts real-time ASL hand sign detection
+4. Displays live video with ASL sign recognition results
 
 ### Keyboard Controls
 
@@ -134,7 +134,7 @@ config.save_config("my_config.json")
 
 ## 📖 Usage Examples
 
-### Basic Object Detection
+### Basic ASL Hand Sign Detection
 
 ```python
 from src.models.detector import ObjectDetector
@@ -149,14 +149,14 @@ visualizer = DetectionVisualizer()
 # Process frames
 with camera:
     for frame in camera.get_frame_generator():
-        # Run detection
+        # Run ASL hand sign detection
         result = detector.detect(frame)
 
-        # Draw results
+        # Draw ASL sign results
         output_frame = visualizer.draw_detections(frame, result.detections)
 
-        # Display
-        cv2.imshow('Detection', output_frame)
+        # Display ASL detection results
+        cv2.imshow('ASL Hand Sign Detection', output_frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 ```
@@ -178,7 +178,7 @@ model_path = manager.download_model("ssd_mobilenet_v2")
 print(f"Model downloaded to: {model_path}")
 ```
 
-### Dataset Handling
+### ASL Dataset Handling
 
 ```python
 from src.utils.dataset_manager import DatasetManager
@@ -186,12 +186,12 @@ from src.utils.dataset_manager import DatasetManager
 # Initialize manager
 manager = DatasetManager()
 
-# Download COCO annotations
-dataset_path = manager.download_dataset("coco_2017_val")
+# Download ASL alphabet dataset
+dataset_path = manager.download_dataset("asl_alphabet_test")
 
-# Get class names
-class_names = manager.get_class_names("annotations/instances_val2017.json")
-print(f"COCO classes: {class_names[:10]}...")
+# Get ASL class names
+class_names = manager.get_class_names("asl_alphabet_test.json")
+print(f"ASL signs: {class_names[:10]}...")
 ```
 
 ## 🔧 Advanced Configuration
@@ -340,9 +340,9 @@ This project is open source. Feel free to use, modify, and distribute.
 
 - **TensorFlow**: Machine learning framework
 - **OpenCV**: Computer vision library
-- **COCO Dataset**: Object detection dataset
-- **TensorFlow Model Zoo**: Pretrained models
+- **ASL Alphabet Dataset**: American Sign Language hand sign dataset
+- **TensorFlow Model Zoo**: Pretrained models adapted for ASL detection
 
 ---
 
-**Ready to detect objects? Run `python src/main.py` and start exploring!**
+**Ready to detect ASL hand signs? Run `python src/main.py` and start recognizing American Sign Language!**

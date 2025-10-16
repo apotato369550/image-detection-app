@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Computer Vision Application Main Entry Point
+ASL Hand Sign Detection Application Main Entry Point
 
-This module serves as the main entry point for the complete computer vision application.
-It integrates model downloading, camera capture, object detection, and visualization
-into a cohesive real-time object detection system.
+This module serves as the main entry point for the ASL hand sign detection application.
+It integrates model downloading, camera capture, ASL hand sign detection, and visualization
+into a cohesive real-time ASL recognition system.
 """
 
 import cv2
@@ -19,8 +19,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
-class ComputerVisionApp:
-    """Main application class for the complete computer vision system."""
+class ASLHandSignDetectionApp:
+    """Main application class for the ASL hand sign detection system."""
 
     def __init__(self,
                  camera_id: int = 0,
@@ -90,11 +90,24 @@ class ComputerVisionApp:
             return False
 
     def initialize_detector(self) -> bool:
-        """Initialize the object detector."""
+        """Initialize the ASL hand sign detector."""
         try:
             from models.detector import ObjectDetector
+            import sys
+            import os
+            # Add the project root directory to the path so we can import config
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(current_dir)
+            sys.path.insert(0, project_root)
+            try:
+                from config import config
+            except ImportError as e:
+                print(f"Import error: {e}")
+                print(f"Current sys.path: {sys.path}")
+                print(f"Looking for config in: {project_root}")
+                raise
 
-            logger.info("Initializing object detector...")
+            logger.info("Initializing ASL hand sign detector...")
 
             # Get model path
             if not self.model_manager:
@@ -109,12 +122,18 @@ class ComputerVisionApp:
             # Fix: tf.saved_model.load() expects the directory containing the SavedModel, not the .pb file
             model_file = Path("models")
 
-            # Initialize detector
-            self.detector = ObjectDetector(confidence_threshold=self.confidence_threshold)
+            # Initialize detector with ASL-specific configuration
+            detection_config = config.get_detection_config()
+            self.detector = ObjectDetector(
+                confidence_threshold=detection_config["confidence_threshold"],
+                hand_detection_only=detection_config["hand_detection_only"],
+                enable_skin_detection=detection_config["enable_skin_detection"],
+                min_hand_size=detection_config["min_hand_size"]
+            )
             success = self.detector.load_model(str(model_file))
 
             if success:
-                logger.info("Object detector initialized successfully")
+                logger.info("ASL hand sign detector initialized successfully")
                 return True
             else:
                 logger.error("Failed to load model into detector")
@@ -178,7 +197,7 @@ class ComputerVisionApp:
 
     def initialize(self) -> bool:
         """Initialize all components."""
-        logger.info("Starting Computer Vision Application initialization...")
+        logger.info("Starting ASL Hand Sign Detection Application initialization...")
 
         # Initialize components in order
         if not self.initialize_model_manager():
@@ -204,7 +223,7 @@ class ComputerVisionApp:
             return frame
 
         try:
-            # Run object detection
+            # Run ASL hand sign detection
             detection_result = self.detector.detect(frame)
 
             # Update performance tracking
@@ -212,10 +231,10 @@ class ComputerVisionApp:
 
             # Debug: Log detection results
             num_detections = len(detection_result.detections)
-            logger.info(f"Frame processed: {num_detections} objects detected")
+            logger.info(f"Frame processed: {num_detections} ASL signs detected")
 
             if num_detections > 0:
-                logger.info(f"Top detection: {detection_result.detections[0].class_name} ({detection_result.detections[0].confidence:.2f})")
+                logger.info(f"Top ASL sign: {detection_result.detections[0].class_name} ({detection_result.detections[0].confidence:.2f})")
 
             # Draw detections on frame
             result_frame = self.visualizer.draw_detections(
@@ -263,14 +282,14 @@ class ComputerVisionApp:
 
     def run(self) -> None:
         """Main application loop."""
-        logger.info("Starting Computer Vision Application...")
+        logger.info("Starting ASL Hand Sign Detection Application...")
 
         if not self.initialize():
             logger.error("Failed to initialize application. Exiting.")
             sys.exit(1)
 
         self.running = True
-        logger.info("Application started. Press 'q' to quit, 's' to save frame")
+        logger.info("ASL Detection started. Press 'q' to quit, 's' to save frame")
 
         try:
             # Use camera context manager for automatic cleanup
@@ -286,7 +305,7 @@ class ComputerVisionApp:
                     final_frame = self.add_performance_overlay(processed_frame)
 
                     # Display the frame
-                    cv2.imshow('Computer Vision App - Object Detection', final_frame)
+                    cv2.imshow('ASL Hand Sign Detection', final_frame)
 
                     # Handle keyboard input
                     key = cv2.waitKey(1) & 0xFF
@@ -364,10 +383,10 @@ def main() -> None:
     setup_logging("INFO")
 
     # Create and run application
-    app = ComputerVisionApp(
+    app = ASLHandSignDetectionApp(
         camera_id=0,
         model_name="ssd_mobilenet_v2",
-        confidence_threshold=0.3,  # Back to reasonable threshold now that input format is fixed
+        confidence_threshold=0.7,  # Higher threshold for ASL detection
         width=640,
         height=480,
         fps=30
