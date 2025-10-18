@@ -1,13 +1,31 @@
-# ASL Hand Sign Detection Application
+# Object Detection Application
 
-A complete, production-ready Python computer vision application for real-time American Sign Language (ASL) hand sign detection using TensorFlow Lite and OpenCV. Features automatic model downloading, webcam integration, and live visualization of ASL alphabet and common signs.
+A complete, production-ready Python computer vision application for real-time object detection using TensorFlow and OpenCV. Features automatic model downloading, webcam integration, and live visualization of detected objects.
+
+## ⚠️ Important Note About ASL Hand Sign Detection
+
+**This application currently uses a pre-trained COCO dataset model (SSD MobileNet V2), which detects general objects like people, cars, animals, etc., but does NOT detect ASL hand signs.**
+
+To detect ASL hand signs, you would need:
+1. A model specifically trained on ASL hand sign data
+2. A custom-trained TensorFlow/PyTorch model with ASL alphabet classes
+3. Dataset like ASL-MNIST, ASL Alphabet Dataset, or similar
+
+**The current model can detect 90 COCO object classes including:**
+- person, bicycle, car, motorcycle, airplane, bus, train, truck, boat
+- traffic light, fire hydrant, stop sign, parking meter, bench
+- bird, cat, dog, horse, sheep, cow, elephant, bear, zebra, giraffe
+- backpack, umbrella, handbag, tie, suitcase, frisbee, sports ball
+- bottle, cup, fork, knife, spoon, bowl, banana, apple, sandwich
+- chair, couch, bed, dining table, tv, laptop, mouse, keyboard, cell phone
+- And many more common objects...
 
 ## 🚀 Features
 
-- **Real-time ASL Hand Sign Detection**: Live American Sign Language hand sign recognition using pretrained TensorFlow Lite models
-- **Automatic Model Management**: Downloads and caches models suitable for hand sign detection
+- **Real-time Object Detection**: Live object recognition using pre-trained TensorFlow models
+- **Automatic Model Management**: Downloads and caches SSD MobileNet V2 model from TensorFlow Hub
 - **Webcam Integration**: Robust camera handling with frame rate control
-- **Live Visualization**: Bounding boxes, ASL sign labels, and confidence scores
+- **Live Visualization**: Bounding boxes, object labels, and confidence scores
 - **Performance Monitoring**: Real-time FPS and inference speed tracking
 - **Modular Architecture**: Clean separation of concerns with extensible design
 - **Configuration Management**: Centralized configuration for easy customization
@@ -22,11 +40,11 @@ image-detection-app/
 │   ├── models/
 │   │   ├── __init__.py          # Models package
 │   │   ├── model_manager.py     # Model downloading and caching
-│   │   └── detector.py          # ASL hand sign detection inference
+│   │   └── detector.py          # Object detection inference (COCO dataset)
 │   └── utils/
 │       ├── __init__.py          # Utils package
 │       ├── camera.py            # Webcam handling
-│       ├── dataset_manager.py   # ASL dataset downloading
+│       ├── dataset_manager.py   # Dataset downloading
 │       └── visualizer.py        # Detection visualization
 ├── config.py                       # Centralized configuration
 ├── requirements.txt                 # Python dependencies
@@ -79,10 +97,10 @@ cv-app
 ```
 
 **What happens on first run:**
-1. Downloads SSD MobileNet V2 model (~15MB) suitable for hand sign detection
-2. Initializes webcam and ASL hand sign detector
-3. Starts real-time ASL hand sign detection
-4. Displays live video with ASL sign recognition results
+1. Downloads SSD MobileNet V2 model (~15MB) from TensorFlow Hub
+2. Initializes webcam and object detector
+3. Starts real-time object detection
+4. Displays live video with detected objects (person, bottle, cell phone, etc.)
 
 ### Keyboard Controls
 
@@ -134,29 +152,33 @@ config.save_config("my_config.json")
 
 ## 📖 Usage Examples
 
-### Basic ASL Hand Sign Detection
+### Basic Object Detection
 
 ```python
 from src.models.detector import ObjectDetector
 from src.utils.camera import CameraHandler
 from src.utils.visualizer import DetectionVisualizer
+import cv2
 
 # Initialize components
 camera = CameraHandler()
 detector = ObjectDetector()
 visualizer = DetectionVisualizer()
 
+# Load model
+detector.load_model("models")
+
 # Process frames
 with camera:
     for frame in camera.get_frame_generator():
-        # Run ASL hand sign detection
+        # Run object detection (detects COCO objects: person, car, etc.)
         result = detector.detect(frame)
 
-        # Draw ASL sign results
+        # Draw detection results
         output_frame = visualizer.draw_detections(frame, result.detections)
 
-        # Display ASL detection results
-        cv2.imshow('ASL Hand Sign Detection', output_frame)
+        # Display detection results
+        cv2.imshow('Object Detection', output_frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 ```
@@ -178,21 +200,27 @@ model_path = manager.download_model("ssd_mobilenet_v2")
 print(f"Model downloaded to: {model_path}")
 ```
 
-### ASL Dataset Handling
+### Supported Object Classes
+
+The SSD MobileNet V2 model can detect 90 COCO dataset classes:
 
 ```python
-from src.utils.dataset_manager import DatasetManager
+from src.models.detector import ObjectDetector
 
-# Initialize manager
-manager = DatasetManager()
-
-# Download ASL alphabet dataset
-dataset_path = manager.download_dataset("asl_alphabet_test")
-
-# Get ASL class names
-class_names = manager.get_class_names("asl_alphabet_test.json")
-print(f"ASL signs: {class_names[:10]}...")
+detector = ObjectDetector()
+print("Supported classes:", detector.class_names)
+# Output: ['person', 'bicycle', 'car', 'motorcycle', ...]
 ```
+
+**Most commonly detected objects:**
+- People and body parts
+- Vehicles: car, bicycle, motorcycle, bus, truck, airplane
+- Animals: dog, cat, bird, horse, cow, sheep
+- Furniture: chair, couch, bed, dining table
+- Electronics: laptop, cell phone, tv, keyboard, mouse
+- Kitchen items: bottle, cup, fork, knife, bowl
+- Food: banana, apple, sandwich, orange, pizza
+- And many more!
 
 ## 🔧 Advanced Configuration
 
@@ -336,13 +364,35 @@ Error: Can't open display window
 
 This project is open source. Feel free to use, modify, and distribute.
 
+## 🎯 How to Add ASL Hand Sign Detection
+
+To convert this into a true ASL hand sign detector, you would need to:
+
+1. **Obtain an ASL-trained model:**
+   - Train a model on ASL datasets (ASL-MNIST, ASL Alphabet, etc.)
+   - Use transfer learning from a pre-trained model
+   - Fine-tune on ASL hand sign images
+
+2. **Replace the model:**
+   - Update `config.py` with ASL model URL
+   - Modify `detector.py` class names to ASL alphabet (A-Z, 0-9, etc.)
+   - Adjust preprocessing for hand-specific detection
+
+3. **Recommended ASL datasets:**
+   - ASL Alphabet Dataset (Kaggle)
+   - ASL-MNIST
+   - MS-ASL (Microsoft American Sign Language Dataset)
+   - WLASL (World-Level American Sign Language)
+
 ## 🙏 Acknowledgments
 
 - **TensorFlow**: Machine learning framework
+- **TensorFlow Hub**: Pre-trained SSD MobileNet V2 model
 - **OpenCV**: Computer vision library
-- **ASL Alphabet Dataset**: American Sign Language hand sign dataset
-- **TensorFlow Model Zoo**: Pretrained models adapted for ASL detection
+- **COCO Dataset**: Common Objects in Context dataset for object detection
 
 ---
 
-**Ready to detect ASL hand signs? Run `python src/main.py` and start recognizing American Sign Language!**
+**Ready to detect objects? Run `python src/main.py` and start recognizing everyday objects!**
+
+**Note:** This application currently detects COCO objects (person, car, bottle, etc.), not ASL hand signs. See the section above for how to add ASL detection capability.

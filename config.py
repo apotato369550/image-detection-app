@@ -1,8 +1,11 @@
 """
 Configuration Module
 
-Centralized configuration for the ASL Hand Sign Detection Application.
+Centralized configuration for the Object Detection Application.
 Contains all settings for models, camera, detection, display, and file paths.
+
+NOTE: Current configuration uses COCO dataset model (SSD MobileNet V2).
+This model detects general objects, not ASL hand signs.
 """
 
 import os
@@ -49,15 +52,18 @@ class Config:
             "contrast": 128
         }
 
-        # ASL hand sign detection configuration
+        # Object detection configuration
+        # NOTE: Current model (SSD MobileNet V2) is trained on COCO dataset, not ASL signs
+        # It can detect general objects like person, car, dog, etc.
+        # For ASL detection, you need a custom-trained model
         self.detection = {
-            "confidence_threshold": 0.7,
+            "confidence_threshold": 0.5,  # Lowered to detect more objects
             "iou_threshold": 0.45,
             "max_detections": 100,
             "enable_nms": True,
             "nms_method": "default",  # "default", "soft", "hard"
-            "hand_detection_only": True,  # Only detect hands, filter out other objects
-            "enable_skin_detection": True,  # Use skin color filtering for better hand detection
+            "hand_detection_only": False,  # Set to False to detect all COCO objects
+            "enable_skin_detection": False,  # Disabled for COCO model
             "min_hand_size": 1000  # Minimum hand region size in pixels
         }
 
@@ -76,7 +82,7 @@ class Config:
 
         # Application configuration
         self.app = {
-            "window_title": "ASL Hand Sign Detection App",
+            "window_title": "Object Detection App (COCO Dataset)",
             "enable_logging": True,
             "log_level": "INFO",
             "log_file": None,  # None for console only, or path for file logging
@@ -266,7 +272,7 @@ class Config:
 
     def print_config(self) -> None:
         """Print current configuration to console."""
-        print("ASL Hand Sign Detection Application Configuration")
+        print("Object Detection Application Configuration")
         print("=" * 55)
 
         print("\nModel Configuration:")

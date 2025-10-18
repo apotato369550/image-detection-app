@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """
-ASL Hand Sign Detection Application Main Entry Point
+Object Detection Application Main Entry Point
 
-This module serves as the main entry point for the ASL hand sign detection application.
-It integrates model downloading, camera capture, ASL hand sign detection, and visualization
-into a cohesive real-time ASL recognition system.
+This module serves as the main entry point for the object detection application.
+It integrates model downloading, camera capture, object detection, and visualization
+into a cohesive real-time detection system.
+
+NOTE: This application uses SSD MobileNet V2 trained on COCO dataset.
+It detects general objects (person, car, bottle, etc.), NOT ASL hand signs.
+For ASL detection, you need a model trained on ASL hand sign data.
 """
 
 import cv2
@@ -20,7 +24,12 @@ logger = logging.getLogger(__name__)
 
 
 class ASLHandSignDetectionApp:
-    """Main application class for the ASL hand sign detection system."""
+    """Main application class for the object detection system.
+
+    Note: Despite the class name, this currently uses COCO object detection,
+    not ASL hand sign detection. The model detects general objects like
+    person, car, bottle, etc.
+    """
 
     def __init__(self,
                  camera_id: int = 0,
@@ -90,7 +99,7 @@ class ASLHandSignDetectionApp:
             return False
 
     def initialize_detector(self) -> bool:
-        """Initialize the ASL hand sign detector."""
+        """Initialize the object detector (COCO dataset model)."""
         try:
             from models.detector import ObjectDetector
             import sys
@@ -107,7 +116,7 @@ class ASLHandSignDetectionApp:
                 print(f"Looking for config in: {project_root}")
                 raise
 
-            logger.info("Initializing ASL hand sign detector...")
+            logger.info("Initializing object detector (COCO model)...")
 
             # Get model path
             if not self.model_manager:
@@ -119,10 +128,10 @@ class ASLHandSignDetectionApp:
                 logger.error(f"Model info not found for: {self.model_name}")
                 return False
 
-            # Fix: tf.saved_model.load() expects the directory containing the SavedModel, not the .pb file
+            # tf.saved_model.load() expects the directory containing the SavedModel
             model_file = Path("models")
 
-            # Initialize detector with ASL-specific configuration
+            # Initialize detector with detection configuration
             detection_config = config.get_detection_config()
             self.detector = ObjectDetector(
                 confidence_threshold=detection_config["confidence_threshold"],
@@ -133,7 +142,8 @@ class ASLHandSignDetectionApp:
             success = self.detector.load_model(str(model_file))
 
             if success:
-                logger.info("ASL hand sign detector initialized successfully")
+                logger.info("Object detector initialized successfully")
+                logger.info(f"Model can detect {len(self.detector.class_names)} COCO object classes")
                 return True
             else:
                 logger.error("Failed to load model into detector")
@@ -197,7 +207,7 @@ class ASLHandSignDetectionApp:
 
     def initialize(self) -> bool:
         """Initialize all components."""
-        logger.info("Starting ASL Hand Sign Detection Application initialization...")
+        logger.info("Starting Object Detection Application initialization...")
 
         # Initialize components in order
         if not self.initialize_model_manager():
@@ -231,10 +241,10 @@ class ASLHandSignDetectionApp:
 
             # Debug: Log detection results
             num_detections = len(detection_result.detections)
-            logger.info(f"Frame processed: {num_detections} ASL signs detected")
+            logger.info(f"Frame processed: {num_detections} objects detected")
 
             if num_detections > 0:
-                logger.info(f"Top ASL sign: {detection_result.detections[0].class_name} ({detection_result.detections[0].confidence:.2f})")
+                logger.info(f"Top detection: {detection_result.detections[0].class_name} ({detection_result.detections[0].confidence:.2f})")
 
             # Draw detections on frame
             result_frame = self.visualizer.draw_detections(
@@ -282,14 +292,14 @@ class ASLHandSignDetectionApp:
 
     def run(self) -> None:
         """Main application loop."""
-        logger.info("Starting ASL Hand Sign Detection Application...")
+        logger.info("Starting Object Detection Application...")
 
         if not self.initialize():
             logger.error("Failed to initialize application. Exiting.")
             sys.exit(1)
 
         self.running = True
-        logger.info("ASL Detection started. Press 'q' to quit, 's' to save frame")
+        logger.info("Object Detection started. Press 'q' to quit, 's' to save frame")
 
         try:
             # Use camera context manager for automatic cleanup
@@ -305,7 +315,7 @@ class ASLHandSignDetectionApp:
                     final_frame = self.add_performance_overlay(processed_frame)
 
                     # Display the frame
-                    cv2.imshow('ASL Hand Sign Detection', final_frame)
+                    cv2.imshow('Object Detection (COCO Dataset)', final_frame)
 
                     # Handle keyboard input
                     key = cv2.waitKey(1) & 0xFF
@@ -386,7 +396,7 @@ def main() -> None:
     app = ASLHandSignDetectionApp(
         camera_id=0,
         model_name="ssd_mobilenet_v2",
-        confidence_threshold=0.7,  # Higher threshold for ASL detection
+        confidence_threshold=0.5,  # Lowered for better detection
         width=640,
         height=480,
         fps=30
