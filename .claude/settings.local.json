@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dir \"C:\\Users\\Admin\\Desktop\\Coding Stuff\\image-detection-app\\models\" /s /b)"
+      "Bash(dir \"C:\\Users\\Admin\\Desktop\\Coding Stuff\\image-detection-app\\models\" /s /b)",
+      "Bash(venv/Scripts/pip install:*)"
     ],
     "deny": [],
     "ask": []
