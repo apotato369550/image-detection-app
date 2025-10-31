@@ -70,6 +70,7 @@ setup(
     entry_points={
         "console_scripts": [
             "cv-app=src.main:main",
+            "asl-app=src.asl_main:main",
         ],
     },
     include_package_data=True,

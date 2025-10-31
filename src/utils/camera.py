@@ -8,9 +8,12 @@ proper cleanup and frame rate control.
 
 import logging
 import time
-from typing import Optional, Tuple, Generator, Union, List
+from typing import Optional, Tuple, Generator, Union, List, TYPE_CHECKING
 from pathlib import Path
 import numpy as np
+
+if TYPE_CHECKING:
+    import cv2
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

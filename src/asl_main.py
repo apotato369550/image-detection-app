@@ -156,11 +156,15 @@ class ASLHandSignApp:
         logger.info("All components initialized successfully")
         return True
 
-    def process_frame(self, frame: cv2.Mat) -> cv2.Mat:
-        """Process a single frame through the detection pipeline."""
+    def process_frame(self, frame: cv2.Mat) -> tuple:
+        """Process a single frame through the detection pipeline.
+
+        Returns:
+            tuple: (result_frame, detection_result) for access to current detections
+        """
         if not self.asl_detector or not self.asl_visualizer:
             logger.error("Detector or visualizer not initialized")
-            return frame
+            return frame, None
 
         try:
             # Run ASL hand sign detection
@@ -180,9 +184,9 @@ class ASLHandSignApp:
                     if len(self.detected_signs) > 20:
                         self.detected_signs = self.detected_signs[-20:]
 
-                logger.info(f"Frame {self.frame_count}: Detected {num_detections} hand(s)")
+                logger.debug(f"Frame {self.frame_count}: Detected {num_detections} hand(s)")
                 for i, det in enumerate(detection_result.detections):
-                    logger.info(f"  Hand {i+1}: {det.letter} ({det.confidence:.2f}) - {det.handedness}")
+                    logger.debug(f"  Hand {i+1}: {det.letter} ({det.confidence:.2f}) - {det.handedness}")
 
             # Draw detections on frame
             result_frame = self.asl_visualizer.draw_asl_detections(
@@ -194,14 +198,19 @@ class ASLHandSignApp:
             if recent_letters:
                 result_frame = self.asl_visualizer.draw_asl_legend(result_frame, recent_letters)
 
-            return result_frame
+            return result_frame, detection_result
 
         except Exception as e:
             logger.error(f"Error processing frame: {str(e)}")
-            return frame
+            return frame, None
 
-    def add_performance_overlay(self, frame: cv2.Mat) -> cv2.Mat:
-        """Add performance information overlay to frame."""
+    def add_performance_overlay(self, frame: cv2.Mat, detection_result=None) -> cv2.Mat:
+        """Add performance information overlay to frame.
+
+        Args:
+            frame: Input frame
+            detection_result: Current frame's detection result to get accurate hand count
+        """
         try:
             # Calculate FPS
             elapsed_time = time.time() - self.start_time if self.start_time > 0 else 0
@@ -211,11 +220,13 @@ class ASLHandSignApp:
             else:
                 fps = 0.0
 
+            # Get current hand count from detection result
+            current_hands = len(detection_result.detections) if detection_result else 0
+
             # Add info overlay
             if self.asl_visualizer:
                 frame = self.asl_visualizer.draw_info_overlay(
-                    frame, fps,
-                    len(self.detected_signs) if self.detected_signs else 0
+                    frame, fps, current_hands
                 )
 
             return frame
@@ -243,10 +254,10 @@ class ASLHandSignApp:
                         break
 
                     # Process frame through detection pipeline
-                    processed_frame = self.process_frame(frame)
+                    processed_frame, detection_result = self.process_frame(frame)
 
                     # Add performance overlay
-                    final_frame = self.add_performance_overlay(processed_frame)
+                    final_frame = self.add_performance_overlay(processed_frame, detection_result)
 
                     # Display the frame
                     cv2.imshow('ASL Hand Sign Detection', final_frame)
